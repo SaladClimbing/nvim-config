@@ -1,3 +1,2 @@
 require("config.lazy")
-require("theprimeagen")
-
+require("remaps")
