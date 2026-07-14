@@ -39,7 +39,7 @@ return {
 
         mason_lspconfig.setup({
             ensure_installed = {
-                "pyright",
+                "basedpyright",
                 "vtsls",
                 "html",
                 "cssls",
