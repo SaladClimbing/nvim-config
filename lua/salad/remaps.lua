@@ -1,5 +1,7 @@
+-- Leader Key --
 vim.keymap.set('n', '<leader>pv', vim.cmd.Ex)
 
+-- Telescope --
 local telescopebuiltin = require('telescope.builtin')
 vim.keymap.set('n', '<leader>pf', telescopebuiltin.find_files, { desc = 'Telescope find files' })
 vim.keymap.set('n', '<leader>pg', telescopebuiltin.live_grep, { desc = 'Telescope live grep' })
