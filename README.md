@@ -96,13 +96,11 @@ A custom VS Code-style tabline replaces the default tab line. Shows all listed b
 | n | `<leader>pv` | `:Ex` | File explorer |
 | n | `<Tab>` | `:bnext` | Next buffer |
 | n | `<S-Tab>` | `:bprev` | Previous buffer |
-| n | `]b` | `:bnext` | Next buffer |
-| n | `[b` | `:bprev` | Previous buffer |
 | n | `<leader>bn` | `:enew` | New buffer |
 | n | `<leader>bd` | `:bd` | Close buffer |
 | n | `<leader>bD` | `:bd!` | Force close buffer |
-| n | `<leader>bh` / `<S-h>` | `:bprev` | Previous buffer |
-| n | `<leader>bl` / `<S-l>` | `:bnext` | Next buffer |
+| n | `<S-h>` | `:bprev` | Previous buffer |
+| n | `<S-l>` | `:bnext` | Next buffer |
 | n | `<leader>bb` | Telescope | List buffers |
 | n | `<leader>pf` | Telescope | Find files |
 | n | `<leader>pg` | Telescope | Live grep |
@@ -247,8 +245,7 @@ Integrates Neovim's tabline and statusline with tmux, preventing duplicate statu
 | `<leader>bn` | Buffer | New buffer |
 | `<leader>bd` | Buffer | Close buffer |
 | `<leader>bD` | Buffer | Force close buffer |
-| `<leader>bh` | Buffer | Previous buffer |
-| `<leader>bl` | Buffer | Next buffer |
+
 | `<leader>bb` | Telescope | List buffers |
 | `<leader>pf` | Telescope | Find files |
 | `<leader>pg` | Telescope | Live grep |
