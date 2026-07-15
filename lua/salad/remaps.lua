@@ -10,7 +10,9 @@ vim.keymap.set("n", "<leader>bn", ":enew<CR>", { desc = "New buffer" })
 vim.keymap.set("n", "<leader>bd", ":bd<CR>", { desc = "Close buffer" })
 vim.keymap.set("n", "<leader>bD", ":bd!<CR>", { desc = "Force close buffer" })
 vim.keymap.set("n", "<leader>bh", ":bprev<CR>", { desc = "Previous buffer" })
+vim.keymap.set("n", "<S-h>", ":bprev<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bl", ":bnext<CR>", { desc = "Next buffer" })
+vim.keymap.set("n", "<S-l>", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bb", "<cmd>Telescope buffers<CR>", { desc = "List buffers" })
 
 -- Leader Key --
