@@ -1,3 +1,5 @@
+-- whichkey.lua: Popup keymap cheatsheet
+
 return {
   "folke/which-key.nvim",
   event = "VeryLazy",
@@ -44,7 +46,6 @@ return {
     wk.setup(opts)
     wk.add({
       { "<leader>p", group = "Telescope" },
-      { "<leader>g", group = "Git" },
       { "<leader>u", group = "Undotree" },
       { "<leader>b", group = "Buffer" },
     })

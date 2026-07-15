@@ -1,3 +1,5 @@
+-- mason.lua: LSP manager (Mason), server configs (lspconfig), and tool auto-install
+
 return {
     "williamboman/mason.nvim",
     opts = {},

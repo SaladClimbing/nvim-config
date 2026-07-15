@@ -33,26 +33,30 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 
 ```
 ~/.config/nvim/
-├── init.la                  # entry point -> require("salad")
-├── lazy-lock.json           # locked plugin versions
-├── after/plugin/colors.lua  # transparent bg override
-├── install.sh               # one-shot setup script
+├── init.lua                  # entry point -> require("salad")
+├── lazy-lock.json            # locked plugin versions
+├── after/plugin/colors.lua   # transparent bg override
+├── install.sh                # one-shot setup script
 └── lua/salad/
-    ├── init.lua             # mapleader, loads submodules
-    ├── settings.lua         # editor options
-    ├── remaps.lua           # global keymaps
-    ├── lazy_init.lua        # lazy.nvim bootstrap
-    └── lazy/                # per-plugin specs
-        ├── theme.lua        # catppuccin
-        ├── treesitter.lua   # nvim-treesitter
-        ├── mason.lua        # mason + lspconfig
-        ├── cmp.lua          # nvim-cmp + LuaSnip
-        ├── telescope.lua    # telescope.nvim
-        ├── conform.lua      # conform.nvim
-        ├── fugitive.lua     # vim-fugitive
-        ├── undotree.lua     # undotree
-        ├── lualine.lua      # lualine.nvim
-        └── lazydev.lua      # lazydev.nvim
+    ├── init.lua              # mapleader, loads submodules
+    ├── settings.lua          # editor options, autocmds, buffer tabline
+    ├── remaps.lua            # global keymaps
+    ├── lazy_init.lua         # lazy.nvim bootstrap
+    └── lazy/                 # per-plugin specs
+        ├── theme.lua         # catppuccin
+        ├── treesitter.lua    # nvim-treesitter
+        ├── mason.lua         # mason + lspconfig
+        ├── cmp.lua           # nvim-cmp + LuaSnip
+        ├── telescope.lua     # telescope.nvim
+        ├── conform.lua       # conform.nvim
+        ├── undotree.lua      # undotree
+        ├── lualine.lua       # lualine.nvim
+        ├── lazydev.lua       # lazydev.nvim
+        ├── whichkey.lua      # which-key.nvim
+        ├── fidget.lua        # fidget.nvim
+        ├── neotab.lua        # neotab.nvim
+        ├── tpipeline.lua     # vim-tpipeline
+        └── vim-tmux-navigator.lua  # tmux pane navigation
 ```
 
 ## Leader Key
@@ -70,10 +74,18 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 | tabstop / shiftwidth | 4 |
 | expandtab / smartindent | on |
 | wrap | off |
+| textwidth | 0 |
 | incsearch | on |
 | termguicolors | on |
+| hidden | on |
+| switchbuf | usetab |
+| showtabline | 2 |
 
 Transparent background via `after/plugin/colors.lua`.
+
+### Buffer Tabline
+
+A custom VS Code-style tabline replaces the default tab line. Shows all listed buffers with modified indicators. Filetypes like `netrw`, `qf`, `help`, `TelescopePrompt`, `undotree`, `lspinfo`, and `mason` are hidden from the tabline. Refreshes on `BufEnter`, `BufAdd`, `BufDelete`, and `BufWritePost`.
 
 ---
 
@@ -81,12 +93,27 @@ Transparent background via `after/plugin/colors.lua`.
 
 | Mode | Key | Action | Description |
 |---|---|---|---|
-| n | `<leader>pv` | `:Ex` | Netrw explorer |
+| n | `<leader>pv` | `:Ex` | File explorer |
+| n | `<Tab>` | `:bnext` | Next buffer |
+| n | `<S-Tab>` | `:bprev` | Previous buffer |
+| n | `]b` | `:bnext` | Next buffer |
+| n | `[b` | `:bprev` | Previous buffer |
+| n | `<leader>bn` | `:enew` | New buffer |
+| n | `<leader>bd` | `:bd` | Close buffer |
+| n | `<leader>bD` | `:bd!` | Force close buffer |
+| n | `<leader>bh` / `<S-h>` | `:bprev` | Previous buffer |
+| n | `<leader>bl` / `<S-l>` | `:bnext` | Next buffer |
+| n | `<leader>bb` | Telescope | List buffers |
 | n | `<leader>pf` | Telescope | Find files |
 | n | `<leader>pg` | Telescope | Live grep |
 | n | `<leader>pb` | Telescope | Buffers |
 | n | `<leader>ph` | Telescope | Help tags |
 | n | `<C-p>` | Telescope | Git files |
+| n | `<c-h>` | tmux-navigator | Tmux pane left |
+| n | `<c-j>` | tmux-navigator | Tmux pane down |
+| n | `<c-k>` | tmux-navigator | Tmux pane up |
+| n | `<c-l>` | tmux-navigator | Tmux pane right |
+| n | `<c-\>` | tmux-navigator | Tmux previous pane |
 
 ---
 
@@ -112,7 +139,7 @@ Inlay hints enabled on LspAttach when server supports it.
 
 ## LSP Servers Installed
 
-`pyright`, `vtsls`, `html`, `cssls`, `tailwindcss`, `gopls`, `rust_analyzer`, `clangd`, `jsonls`
+`basedpyright`, `vtsls`, `html`, `cssls`, `tailwindcss`, `gopls`, `rust_analyzer`, `clangd`, `jsonls`
 
 Mason tools auto-installed: `ruff`, `prettierd`, `stylua`, `clang-format`, `goimports`, `golangci-lint`, `markdownlint`, `jq`, `eslint_d`
 
@@ -158,22 +185,49 @@ Auto-install: on | Highlight: on
 
 ---
 
-## vim-fugitive (Git)
-
-| Key | Action |
-|---|---|
-| `<leader>gs` | Git status |
-| `<leader>gd` | Git diff split |
-| `<leader>gc` | Git commit |
-| `<leader>gp` | Git push |
-
----
-
 ## Undotree
 
 | Key | Action |
 |---|---|
 | `<leader>u` | Toggle undotree |
+
+---
+
+## which-key.nvim
+
+Keymap popup cheatsheet. Shows available keymaps when `<leader>` is pressed. Groups configured:
+
+| Prefix | Group |
+|---|---|
+| `<leader>p` | Telescope |
+| `<leader>b` | Buffer |
+| `<leader>u` | Undotree |
+
+Press `<leader>?` to show available buffer-local keymaps.
+
+---
+
+## vim-tmux-navigator
+
+Seamless pane navigation between Neovim windows and tmux panes using Ctrl+h/j/k/l. Requires `vim-tpipeline` for clean tmux statusline integration.
+
+---
+
+## neotab.nvim
+
+Smart Tab behavior in insert mode. Tab navigates between paired brackets/quotes (`()`, `[]`, `{}`, `''`, `""`, ` `` `, `<>`) and indentation levels.
+
+---
+
+## fidget.nvim
+
+LSP progress spinner displayed in the statusline while LSP servers are loading or processing.
+
+---
+
+## vim-tpipeline
+
+Integrates Neovim's tabline and statusline with tmux, preventing duplicate status bars when using `vim-tmux-navigator`.
 
 ---
 
@@ -190,6 +244,12 @@ Auto-install: on | Highlight: on
 | Key | Plugin | Action |
 |---|---|---|
 | `<leader>pv` | Netrw | File explorer |
+| `<leader>bn` | Buffer | New buffer |
+| `<leader>bd` | Buffer | Close buffer |
+| `<leader>bD` | Buffer | Force close buffer |
+| `<leader>bh` | Buffer | Previous buffer |
+| `<leader>bl` | Buffer | Next buffer |
+| `<leader>bb` | Telescope | List buffers |
 | `<leader>pf` | Telescope | Find files |
 | `<leader>pg` | Telescope | Live grep |
 | `<leader>pb` | Telescope | Buffers |
@@ -197,8 +257,6 @@ Auto-install: on | Highlight: on
 | `<leader>ca` | LSP | Code action |
 | `<leader>rn` | LSP | Rename |
 | `<leader>e` | LSP | Line diagnostics |
-| `<leader>gs` | Fugitive | Git status |
-| `<leader>gd` | Fugitive | Git diff split |
-| `<leader>gc` | Fugitive | Git commit |
-| `<leader>gp` | Fugitive | Git push |
 | `<leader>u` | Undotree | Toggle undo tree |
+| `<leader>?` | which-key | Buffer-local keymaps |
+| `<C-p>` | Telescope | Git files |

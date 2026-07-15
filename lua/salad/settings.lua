@@ -1,9 +1,10 @@
+-- settings.lua: Editor options, autocmds, and buffer tabline
+
 vim.cmd.colorscheme("catppuccin")
- 
-vim.opt.nu = true                 -- set line numbers -- set line numbers
+
+vim.opt.nu = true                 -- enable line numbers
 vim.opt.relativenumber = true     -- use relative line numbers
  
--- set tab size to 2 spaces
 local tab_size = 4
 vim.opt.tabstop = tab_size
 vim.opt.softtabstop = tab_size
@@ -12,7 +13,7 @@ vim.opt.expandtab = true
 vim.opt.smartindent = true
  
 vim.opt.wrap = false
-vim.opt.textwidth = 0
+vim.opt.textwidth = 0              -- don't auto-wrap lines
  
 vim.opt.incsearch = true -- incremental search
 
@@ -38,8 +39,6 @@ vim.api.nvim_create_autocmd("FileType", {
 
 local skip_filetypes = {
   netrw = true,
-  fugitive = true,
-  fugitiveblame = true,
   qf = true,
   help = true,
   man = true,

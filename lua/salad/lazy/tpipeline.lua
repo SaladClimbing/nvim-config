@@ -1,3 +1,5 @@
+-- tpipeline.lua: Tmux statusline integration (seamless with vim-tmux-navigator)
+
 return {
 	"vimpostor/vim-tpipeline",
 	init = function()

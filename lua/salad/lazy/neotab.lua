@@ -1,3 +1,5 @@
+-- neotab.lua: Smart tab inside brackets/quotes in insert mode
+
 return {
 	"kawre/neotab.nvim",
 	event = "InsertEnter",

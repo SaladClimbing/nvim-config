@@ -1,3 +1,5 @@
+-- vim-tmux-navigator.lua: Seamless tmux/vim pane navigation with Ctrl-h/j/k/l
+
 return {
 	"christoomey/vim-tmux-navigator",
 	cmd = {

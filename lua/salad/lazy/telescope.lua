@@ -1,3 +1,5 @@
+-- telescope.lua: Fuzzy finder
+
 return {
 	{
 	    'nvim-telescope/telescope.nvim', version = '*',

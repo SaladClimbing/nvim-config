@@ -1,3 +1,5 @@
+-- lazydev.lua: Lua LSP enhancements (luvit types, etc.)
+
 return {
   "folke/lazydev.nvim",
   ft = "lua", -- only load on lua files

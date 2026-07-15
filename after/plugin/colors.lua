@@ -1,3 +1,6 @@
+-- colors.lua: Transparent background override
+-- Runs after colorscheme is loaded to make bg transparent
+
 function ColorMyPencils(color)
 	color = color or "catppuccin"
 	vim.cmd.colorscheme(color)

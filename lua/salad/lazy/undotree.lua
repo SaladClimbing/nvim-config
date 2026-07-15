@@ -1,3 +1,5 @@
+-- undotree.lua: Visual undo history browser
+
 return {
   {
     "mbbill/undotree",

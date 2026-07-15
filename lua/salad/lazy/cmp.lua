@@ -1,3 +1,5 @@
+-- cmp.lua: Autocompletion (nvim-cmp + LuaSnip)
+
 return {
     {
         "hrsh7th/nvim-cmp",

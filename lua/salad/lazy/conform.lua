@@ -1,3 +1,5 @@
+-- conform.lua: Format on save
+
 return {
     "stevearc/conform.nvim",
     opts = {
