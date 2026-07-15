@@ -308,24 +308,18 @@ install_mason_packages() {
 # ──────────────────────────────────────────────
 # Persist PATH and source shell config
 # ──────────────────────────────────────────────
-persist_path_and_source() {
-  local rc_file
+persist_path() {
   case "${SHELL##*/}" in
-    zsh) rc_file="$HOME/.zshrc" ;;
-    bash) rc_file="$HOME/.bashrc" ;;
-    *) rc_file="$HOME/.profile" ;;
+    zsh) RC_FILE="$HOME/.zshrc" ;;
+    bash) RC_FILE="$HOME/.bashrc" ;;
+    *) RC_FILE="$HOME/.profile" ;;
   esac
 
   local line='export PATH="$HOME/.local/bin:$PATH"'
-  if ! grep -qF "$line" "$rc_file" 2>/dev/null; then
-    echo "$line" >> "$rc_file"
-    echo "Added $NVIM_BIN_DIR to PATH in $rc_file"
+  if ! grep -qF "$line" "$RC_FILE" 2>/dev/null; then
+    echo "$line" >> "$RC_FILE"
+    echo "Added $NVIM_BIN_DIR to PATH in $RC_FILE"
   fi
-
-  # shellcheck disable=SC1090
-  source "$rc_file"
-
-  export PATH="$HOME/.local/bin:$PATH"
 }
 
 # ──────────────────────────────────────────────
@@ -341,8 +335,8 @@ print_summary() {
   if command -v nvim &>/dev/null; then
     nvim --version | head -1
   else
-    echo "NOTE: nvim not in PATH. Add to your shell rc:"
-    echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    echo "To use nvim now, reload your shell config:"
+    echo "  source \"$RC_FILE\""
   fi
 
   echo ""
@@ -376,6 +370,6 @@ export PATH="$NVIM_BIN_DIR:$PATH"
 run_stage "Installing Neovim plugins" install_plugins
 run_stage "Installing Mason LSP packages" install_mason_packages
 
-run_stage "Adding nvim to PATH and sourcing shell config" persist_path_and_source
+run_stage "Adding nvim to PATH" persist_path
 
 print_summary
