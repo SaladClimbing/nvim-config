@@ -196,41 +196,13 @@ install_neovim() {
       $PKG_INSTALL neovim
       ;;
     Linux)
-      if command -v nvim &>/dev/null; then
-        local version
-        version=$(nvim --version 2>/dev/null | head -1 | grep -oP 'v\K[0-9]+\.[0-9]+' || echo "0.0")
-        if awk "BEGIN { exit !($version >= 0.9) }" 2>/dev/null; then
-          echo "Neovim >= 0.9 already installed, skipping."
-          return 0
-        fi
-      fi
+      local tarball="/tmp/nvim-linux-x86_64.tar.gz"
 
-      mkdir -p "$NVIM_BIN_DIR"
+      curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz" -o "$tarball"
+      sudo rm -rf /opt/nvim-linux-x86_64
+      sudo tar -C /opt -xzf "$tarball"
 
-      local version_url
-      version_url=$(curl -sL "https://api.github.com/repos/neovim/neovim/releases/latest" | grep '"tag_name"' | cut -d'"' -f4)
-
-      # Try AppImage (FUSE required)
-      if command -v fusermount &>/dev/null || command -v fuse3 &>/dev/null; then
-        echo "Downloading nvim.appimage..."
-        curl -fsSL "https://github.com/neovim/neovim/releases/download/${version_url}/nvim.appimage" -o /tmp/nvim.appimage
-        chmod +x /tmp/nvim.appimage
-        if /tmp/nvim.appimage --version &>/dev/null; then
-          cp /tmp/nvim.appimage "$NVIM_BIN_DIR/nvim"
-          chmod +x "$NVIM_BIN_DIR/nvim"
-          echo "Neovim installed via AppImage."
-          return 0
-        fi
-        echo "AppImage failed, falling back to tarball..."
-      fi
-
-      # Fallback: tarball
-      echo "Downloading nvim tarball..."
-      curl -fsSL "https://github.com/neovim/neovim/releases/download/${version_url}/nvim-linux64.tar.gz" -o /tmp/nvim-linux64.tar.gz
-      tar xzf /tmp/nvim-linux64.tar.gz -C /tmp
-      cp /tmp/nvim-linux64/bin/nvim "$NVIM_BIN_DIR/nvim"
-      chmod +x "$NVIM_BIN_DIR/nvim"
-      echo "Neovim installed via tarball."
+      NVIM_BIN_DIR="/opt/nvim-linux-x86_64/bin"
       ;;
   esac
 }
@@ -315,7 +287,7 @@ persist_path() {
     *) RC_FILE="$HOME/.profile" ;;
   esac
 
-  local line='export PATH="$HOME/.local/bin:$PATH"'
+  local line="export PATH=\"$NVIM_BIN_DIR:\$PATH\""
   if ! grep -qF "$line" "$RC_FILE" 2>/dev/null; then
     echo "$line" >> "$RC_FILE"
     echo "Added $NVIM_BIN_DIR to PATH in $RC_FILE"

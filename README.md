@@ -17,7 +17,7 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 
 What it does:
 - Installs system dependencies: git, node, go, rust, ripgrep, fd-find, build tools
-- Installs latest Neovim (AppImage on Linux, brew on macOS)
+- Installs latest Neovim (tarball to /opt on Linux, brew on macOS)
 - Clones this config to `~/.config/nvim` (backsup existing)
 - Installs all plugins via lazy.nvim
 - Triggers Mason to auto-install LSP servers and formatters
