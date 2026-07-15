@@ -324,6 +324,8 @@ persist_path_and_source() {
 
   # shellcheck disable=SC1090
   source "$rc_file"
+
+  export PATH="$HOME/.local/bin:$PATH"
 }
 
 # ──────────────────────────────────────────────
