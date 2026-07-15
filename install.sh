@@ -334,10 +334,10 @@ print_summary() {
 
   if command -v nvim &>/dev/null; then
     nvim --version | head -1
-  else
-    echo "To use nvim now, reload your shell config:"
-    echo "  source \"$RC_FILE\""
   fi
+
+  echo "To use nvim in this terminal, reload your shell config:"
+  echo "  source \"$RC_FILE\""
 
   echo ""
   echo "Next steps:"

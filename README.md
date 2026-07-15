@@ -22,7 +22,13 @@ What it does:
 - Installs all plugins via lazy.nvim
 - Triggers Mason to auto-install LSP servers and formatters
 
-No manual steps needed after — just run and open `nvim`.
+After the script finishes, reload your shell config to use `nvim` right away:
+
+```bash
+source ~/.bashrc
+```
+
+(Replace `~/.bashrc` with `~/.zshrc` or `~/.profile` depending on your shell.)
 
 Options:
 | Flag | Description |
