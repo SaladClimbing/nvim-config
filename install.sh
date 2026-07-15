@@ -145,7 +145,7 @@ install_deps() {
   case "$PKG_MANAGER" in
     apt)
       $PKG_UPDATE
-      $PKG_INSTALL git curl unzip nodejs npm golang-go ripgrep fd-find build-essential
+      $PKG_INSTALL git curl unzip nodejs npm golang-go ripgrep fd-find build-essential python3-venv
       if ! command -v rustup &>/dev/null; then
         curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       fi
