@@ -306,6 +306,27 @@ install_mason_packages() {
 }
 
 # ──────────────────────────────────────────────
+# Persist PATH and source shell config
+# ──────────────────────────────────────────────
+persist_path_and_source() {
+  local rc_file
+  case "${SHELL##*/}" in
+    zsh) rc_file="$HOME/.zshrc" ;;
+    bash) rc_file="$HOME/.bashrc" ;;
+    *) rc_file="$HOME/.profile" ;;
+  esac
+
+  local line='export PATH="$HOME/.local/bin:$PATH"'
+  if ! grep -qF "$line" "$rc_file" 2>/dev/null; then
+    echo "$line" >> "$rc_file"
+    echo "Added $NVIM_BIN_DIR to PATH in $rc_file"
+  fi
+
+  # shellcheck disable=SC1090
+  source "$rc_file"
+}
+
+# ──────────────────────────────────────────────
 # Print summary
 # ──────────────────────────────────────────────
 print_summary() {
@@ -352,5 +373,7 @@ export PATH="$NVIM_BIN_DIR:$PATH"
 
 run_stage "Installing Neovim plugins" install_plugins
 run_stage "Installing Mason LSP packages" install_mason_packages
+
+run_stage "Adding nvim to PATH and sourcing shell config" persist_path_and_source
 
 print_summary
