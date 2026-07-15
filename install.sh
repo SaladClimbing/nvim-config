@@ -8,6 +8,7 @@
 # installed automatically by this script.
 #
 set -euo pipefail
+SECONDS=0
 
 REPO_URL="${REPO_URL:-https://github.com/SaladClimbing/nvim-config.git}"
 INSTALL_FONT=false
@@ -48,13 +49,25 @@ done
 # ──────────────────────────────────────────────
 # Progress / logging
 # ──────────────────────────────────────────────
+elapsed() {
+  local m=$((SECONDS / 60))
+  local s=$((SECONDS % 60))
+  if [ "$m" -gt 0 ]; then
+    printf "%dm %ds" "$m" "$s"
+  else
+    printf "%ds" "$s"
+  fi
+}
+
 run_stage() {
   local label="$1"
   shift
+  local start=$SECONDS
 
   if $VERBOSE; then
     echo "==> $label"
     "$@"
+    printf "[\e[32m✓\e[0m] %s  (%s)\n" "$label" "$(elapsed)"
   else
     local log_file
     log_file=$(mktemp)
@@ -81,12 +94,12 @@ run_stage() {
 
     printf "\r\033[K"
     if [ "$exit_code" -ne 0 ]; then
-      printf "[\e[31m✗\e[0m] %s\n" "$label"
+      printf "[\e[31m✗\e[0m] %s  (%s)\n" "$label" "$(elapsed)"
       cat "$log_file" >&2
       rm -f "$log_file"
       exit "$exit_code"
     else
-      printf "[\e[32m✓\e[0m] %s\n" "$label"
+      printf "[\e[32m✓\e[0m] %s  (%s)\n" "$label" "$(elapsed)"
     fi
 
     rm -f "$log_file"
@@ -139,48 +152,57 @@ detect_pkg_manager() {
 }
 
 # ──────────────────────────────────────────────
-# System dependencies
+# System dependencies (granular stages)
 # ──────────────────────────────────────────────
-install_deps() {
+update_pkg_index() {
   case "$PKG_MANAGER" in
-    apt)
-      $PKG_UPDATE
-      $PKG_INSTALL git curl unzip nodejs npm golang-go ripgrep fd-find build-essential python3-venv
-      if ! command -v rustup &>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      fi
-      ;;
-    dnf)
-      $PKG_UPDATE
-      $PKG_INSTALL git curl unzip nodejs npm golang ripgrep fd-find make gcc
-      if ! command -v rustup &>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      fi
-      ;;
-    pacman)
-      $PKG_UPDATE
-      $PKG_INSTALL git curl unzip nodejs npm go ripgrep fd base-devel
-      if ! command -v rustup &>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      fi
-      ;;
-    zypper)
-      $PKG_UPDATE
-      $PKG_INSTALL git curl unzip nodejs npm golang ripgrep fd pattern:devel_basis
-      if ! command -v rustup &>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-      fi
+    apt|dnf|pacman|zypper) $PKG_UPDATE ;;
+    brew) ;; # brew self-updates on install
+  esac
+}
+
+install_core_tools() {
+  case "$PKG_MANAGER" in
+    apt|dnf|pacman|zypper) $PKG_INSTALL git curl unzip ;;
+    brew) $PKG_INSTALL git ;;
+  esac
+}
+
+install_langs() {
+  case "$PKG_MANAGER" in
+    apt) $PKG_INSTALL nodejs npm golang-go ;;
+    dnf) $PKG_INSTALL nodejs npm golang ;;
+    pacman) $PKG_INSTALL nodejs npm go ;;
+    zypper) $PKG_INSTALL nodejs npm golang ;;
+    brew) $PKG_INSTALL node go ;;
+  esac
+}
+
+install_search_build() {
+  case "$PKG_MANAGER" in
+    apt) $PKG_INSTALL ripgrep fd-find build-essential python3-venv ;;
+    dnf) $PKG_INSTALL ripgrep fd-find make gcc ;;
+    pacman) $PKG_INSTALL ripgrep fd base-devel ;;
+    zypper) $PKG_INSTALL ripgrep fd pattern:devel_basis ;;
+    brew) $PKG_INSTALL ripgrep fd ;;
+  esac
+}
+
+install_rust() {
+  if command -v rustup &>/dev/null; then
+    return 0
+  fi
+
+  case "$PKG_MANAGER" in
+    apt|dnf|pacman|zypper)
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
       ;;
     brew)
-      $PKG_INSTALL git node go ripgrep fd
-      if ! command -v rustup &>/dev/null; then
-        $PKG_INSTALL rustup-init
-        rustup-init -y
-      fi
+      $PKG_INSTALL rustup-init
+      rustup-init -y
       ;;
   esac
 
-  # Ensure rustup-managed toolchain is available
   if [ -f "$HOME/.cargo/env" ]; then
     # shellcheck disable=SC1091
     source "$HOME/.cargo/env"
@@ -254,22 +276,37 @@ install_plugins() {
 # Trigger Mason LSP / tool installs
 # ──────────────────────────────────────────────
 install_mason_packages() {
-  # Start nvim headless and keep it alive for 3 minutes so Mason can download
-  # as many LSP servers and tools as possible. The config's ensure_installed
-  # and VimEnter autocmd handle everything. Incomplete installs resume on next open.
   nvim --headless \
     "+lua vim.defer_fn(function() vim.cmd('qa!') end, 180000)" \
     2>/dev/null &
   local nvim_pid=$!
 
-  # Show a spinner while waiting
+  local mason_dir="$HOME/.local/share/nvim/mason/packages"
+  local seen_file
+  seen_file=$(mktemp)
+
+  local tty="/dev/stdout"
+  $VERBOSE || tty="/dev/tty"
+
   local elapsed=0
   while kill -0 "$nvim_pid" 2>/dev/null && [ "$elapsed" -lt 210 ]; do
-    sleep 5
-    elapsed=$((elapsed + 5))
-    printf "    Installing Mason packages... %ds\r" "$elapsed"
+    sleep 2
+    elapsed=$((elapsed + 2))
+
+    if [ -d "$mason_dir" ]; then
+      for pkg in "$mason_dir"/*/; do
+        pkg=$(basename "$pkg")
+        [ -z "$pkg" ] && continue
+        grep -qxF "$pkg" "$seen_file" 2>/dev/null && continue
+        echo "$pkg" >> "$seen_file"
+        printf "    └─ %s\n" "$pkg" > "$tty"
+      done
+    fi
+
+    printf "\r    Installing Mason packages... %ds" "$elapsed" > "$tty"
   done
-  printf "\n"
+  printf "\n" > "$tty"
+  rm -f "$seen_file"
 
   wait "$nvim_pid" 2>/dev/null || true
 
@@ -312,6 +349,8 @@ print_summary() {
   echo "  source \"$RC_FILE\""
 
   echo ""
+  printf "Total time: %s\n" "$(elapsed)"
+  echo ""
   echo "Next steps:"
   echo "  1. Open nvim — Mason auto-installs LSP servers & formatters:"
   echo "       nvim"
@@ -327,7 +366,11 @@ print_summary() {
 # Main
 # ──────────────────────────────────────────────
 run_stage "Detecting OS and package manager" detect_pkg_manager
-run_stage "Installing system dependencies" install_deps
+run_stage "Updating package index" update_pkg_index
+run_stage "Installing core tools" install_core_tools
+run_stage "Installing languages" install_langs
+run_stage "Installing search and build tools" install_search_build
+run_stage "Installing Rust" install_rust
 run_stage "Installing Neovim" install_neovim
 
 if $INSTALL_FONT; then
