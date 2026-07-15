@@ -46,6 +46,7 @@ return {
       { "<leader>p", group = "Telescope" },
       { "<leader>g", group = "Git" },
       { "<leader>u", group = "Undotree" },
+      { "<leader>b", group = "Buffer" },
     })
   end,
   keys = {
