@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+#
+# Prerequisites (must be pre-installed):
+#   bash, curl, tar, standard POSIX utils (mkdir, cp, mv, chmod, grep, cut,
+#   head, sleep, kill, uname)
+#   macOS: nothing else (curl installs Homebrew if missing)
+#   Linux: sudo (for package manager commands)
+#
+# Everything else (git, node, npm, go, ripgrep, fd, rustup, neovim) is
+# installed automatically by this script.
+#
 set -euo pipefail
 
 REPO_URL="${REPO_URL:-git@github.com:SaladClimbing/nvim-config.git}"

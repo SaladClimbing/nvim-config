@@ -2,6 +2,15 @@
 
 ## Install
 
+### Prerequisites
+
+| Requirement | Notes |
+|---|---|
+| `bash`, `curl`, `tar` | Standard shell tools; pre-installed on macOS/Linux |
+| POSIX utils (`mkdir`, `cp`, `mv`, `chmod`, `grep`, `cut`, `head`, `sleep`, `kill`, `uname`) | Present on every POSIX system |
+| **macOS** | Nothing — script installs Homebrew if missing |
+| **Linux** | `sudo` (for package manager commands) |
+
 One-liner for a fresh Linux or macOS machine (SSH-friendly):
 
 ```bash
