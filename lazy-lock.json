@@ -24,5 +24,6 @@
   "undotree": { "branch": "master", "commit": "6fa6b57cda8459e1e4b2ca34df702f55242f4e4d" },
   "vim-fugitive": { "branch": "master", "commit": "3b753cf8c6a4dcde6edee8827d464ba9b8c4a6f0" },
   "vim-tmux-navigator": { "branch": "master", "commit": "e41c431a0c7b7388ae7ba341f01a0d217eb3a432" },
-  "vim-tpipeline": { "branch": "master", "commit": "9c1fc6a9aed96a6ff5f5cb0420e3760e95dfb1c1" }
+  "vim-tpipeline": { "branch": "master", "commit": "9c1fc6a9aed96a6ff5f5cb0420e3760e95dfb1c1" },
+  "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
 }
