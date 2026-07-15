@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 #
-# Prerequisites (must be pre-installed):
-#   bash, curl, tar, standard POSIX utils (mkdir, cp, mv, chmod, grep, cut,
-#   head, sleep, kill, uname)
+# Prerequisites:
 #   macOS: nothing else (curl installs Homebrew if missing)
 #   Linux: sudo (for package manager commands)
 #
