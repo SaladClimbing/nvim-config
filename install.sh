@@ -15,6 +15,7 @@ REPO_URL="${REPO_URL:-git@github.com:SaladClimbing/nvim-config.git}"
 INSTALL_FONT=false
 CONFIG_DIR="$HOME/.config/nvim"
 NVIM_BIN_DIR="$HOME/.local/bin"
+VERBOSE=false
 
 usage() {
   cat <<EOF
@@ -23,6 +24,7 @@ Usage: $0 [options] [repo-url]
 Install neovim config and dependencies.
 
 Options:
+  -v, --verbose     Show all install output (no progress bar)
   --install-font    Install JetBrainsMono Nerd Font
   --help            Show this help
 
@@ -34,6 +36,7 @@ EOF
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    -v|--verbose) VERBOSE=true; shift ;;
     --install-font) INSTALL_FONT=true; shift ;;
     --help) usage ;;
     -*)
@@ -43,6 +46,54 @@ while [[ $# -gt 0 ]]; do
     *) REPO_URL="$1"; shift ;;
   esac
 done
+
+# ──────────────────────────────────────────────
+# Progress / logging
+# ──────────────────────────────────────────────
+run_stage() {
+  local label="$1"
+  shift
+
+  if $VERBOSE; then
+    echo "==> $label"
+    "$@"
+  else
+    local log_file
+    log_file=$(mktemp)
+
+    (
+      trap 'exit 0' TERM
+      local spin='-\|/'
+      local i=0
+      while true; do
+        printf "\r[%c] %s  " "${spin:$i:1}" "$label"
+        i=$(( (i+1) % 4 ))
+        sleep 0.1
+      done
+    ) &
+    local spin_pid=$!
+
+    set +e
+    "$@" > "$log_file" 2>&1
+    local exit_code=$?
+    set -e
+
+    kill "$spin_pid" 2>/dev/null || true
+    wait "$spin_pid" 2>/dev/null || true
+
+    printf "\r\033[K"
+    if [ "$exit_code" -ne 0 ]; then
+      printf "[\e[31m✗\e[0m] %s\n" "$label"
+      cat "$log_file" >&2
+      rm -f "$log_file"
+      exit "$exit_code"
+    else
+      printf "[\e[32m✓\e[0m] %s\n" "$label"
+    fi
+
+    rm -f "$log_file"
+  fi
+}
 
 # ──────────────────────────────────────────────
 # OS / pkg manager detection
@@ -93,8 +144,6 @@ detect_pkg_manager() {
 # System dependencies
 # ──────────────────────────────────────────────
 install_deps() {
-  echo "==> Installing system dependencies..."
-
   case "$PKG_MANAGER" in
     apt)
       $PKG_UPDATE
@@ -144,8 +193,6 @@ install_deps() {
 # Neovim installation (Linux: AppImage, macOS: brew)
 # ──────────────────────────────────────────────
 install_neovim() {
-  echo "==> Installing Neovim..."
-
   case "$OS" in
     Darwin)
       $PKG_INSTALL neovim
@@ -194,8 +241,6 @@ install_neovim() {
 # Nerd Font
 # ──────────────────────────────────────────────
 install_font() {
-  echo "==> Installing JetBrainsMono Nerd Font..."
-
   case "$OS" in
     Darwin)
       $PKG_INSTALL_CASK font-jetbrains-mono-nerd-font
@@ -215,8 +260,6 @@ install_font() {
 # Clone config
 # ──────────────────────────────────────────────
 clone_config() {
-  echo "==> Cloning nvim config from $REPO_URL ..."
-
   if [ -d "$CONFIG_DIR" ]; then
     local backup="${CONFIG_DIR}.bak.$(date +%s)"
     echo "Backing up existing config -> $backup"
@@ -230,8 +273,6 @@ clone_config() {
 # Install plugins (lazy.nvim bootstrap)
 # ──────────────────────────────────────────────
 install_plugins() {
-  echo "==> Installing Neovim plugins (lazy.nvim)..."
-
   # Ensure PATH includes nvim
   export PATH="$NVIM_BIN_DIR:$PATH"
 
@@ -243,10 +284,6 @@ install_plugins() {
 # Trigger Mason LSP / tool installs
 # ──────────────────────────────────────────────
 install_mason_packages() {
-  echo "==> Triggering Mason package installs (LSP servers + tools)..."
-  echo "    This will run in the background when you open nvim for the first time."
-  echo "    The config auto-installs all LSP servers and formatters on startup."
-
   # Start nvim headless and keep it alive for 3 minutes so Mason can download
   # as many LSP servers and tools as possible. The config's ensure_installed
   # and VimEnter autocmd handle everything. Incomplete installs resume on next open.
@@ -302,22 +339,20 @@ print_summary() {
 # ──────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────
-echo "==> Detecting OS and package manager..."
-detect_pkg_manager
-
-install_deps
-install_neovim
+run_stage "Detecting OS and package manager" detect_pkg_manager
+run_stage "Installing system dependencies" install_deps
+run_stage "Installing Neovim" install_neovim
 
 if $INSTALL_FONT; then
-  install_font
+  run_stage "Installing JetBrainsMono Nerd Font" install_font
 fi
 
-clone_config
+run_stage "Cloning nvim config" clone_config
 
 # Ensure PATH includes nvim for subsequent steps
 export PATH="$NVIM_BIN_DIR:$PATH"
 
-install_plugins
-install_mason_packages
+run_stage "Installing Neovim plugins" install_plugins
+run_stage "Installing Mason LSP packages" install_mason_packages
 
 print_summary
