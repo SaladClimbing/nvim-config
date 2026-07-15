@@ -9,7 +9,7 @@
 #
 set -euo pipefail
 
-REPO_URL="${REPO_URL:-git@github.com:SaladClimbing/nvim-config.git}"
+REPO_URL="${REPO_URL:-https://github.com/SaladClimbing/nvim-config.git}"
 INSTALL_FONT=false
 CONFIG_DIR="$HOME/.config/nvim"
 NVIM_BIN_DIR="$HOME/.local/bin"
