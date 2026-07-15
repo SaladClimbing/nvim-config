@@ -1,5 +1,34 @@
 # Salad's Neovim Config
 
+## Install
+
+One-liner for a fresh Linux or macOS machine (SSH-friendly):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/install.sh | bash
+```
+
+What it does:
+- Installs system dependencies: git, node, go, rust, ripgrep, fd-find, build tools
+- Installs latest Neovim (AppImage on Linux, brew on macOS)
+- Clones this config to `~/.config/nvim` (backsup existing)
+- Installs all plugins via lazy.nvim
+- Triggers Mason to auto-install LSP servers and formatters
+
+No manual steps needed after — just run and open `nvim`.
+
+Options:
+| Flag | Description |
+|---|---|
+| `--install-font` | Install JetBrainsMono Nerd Font |
+| `--help` | Show usage |
+| `<repo-url>` | Use a different config repo |
+
+```bash
+# Custom config + font
+curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/install.sh | bash -s --install-font git@github.com:user/other-config.git
+```
+
 ## Architecture
 
 ```
@@ -7,6 +36,7 @@
 ├── init.la                  # entry point -> require("salad")
 ├── lazy-lock.json           # locked plugin versions
 ├── after/plugin/colors.lua  # transparent bg override
+├── install.sh               # one-shot setup script
 └── lua/salad/
     ├── init.lua             # mapleader, loads submodules
     ├── settings.lua         # editor options
