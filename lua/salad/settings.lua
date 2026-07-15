@@ -18,6 +18,16 @@ vim.opt.incsearch = true -- incremental search
 
 vim.opt.termguicolors = true
 
+-- Hide netrw buffers from buffer list and auto-wipe on hide
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "netrw",
+  callback = function()
+    vim.opt_local.buflisted = false
+    vim.opt_local.bufhidden = "wipe"
+  end,
+  desc = "Netrw buffer cleanup",
+})
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "*",
   callback = function()
@@ -25,6 +35,19 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
   desc = "Disable visual line wrapping for all filetypes",
 })
+
+local skip_filetypes = {
+  netrw = true,
+  fugitive = true,
+  fugitiveblame = true,
+  qf = true,
+  help = true,
+  man = true,
+  TelescopePrompt = true,
+  undotree = true,
+  lspinfo = true,
+  mason = true,
+}
 
 -- Buffer tabline (VS Code-style tabs) --
 vim.o.showtabline = 2
@@ -35,6 +58,8 @@ _G.buffer_tabline = function()
   local cur_buf = vim.api.nvim_get_current_buf()
   for _, buf in ipairs(bufs) do
     if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].buflisted then
+      local ft = vim.bo[buf].filetype
+      if skip_filetypes[ft] then goto continue end
       local name = vim.api.nvim_buf_get_name(buf)
       name = vim.fn.fnamemodify(name, ":t")
       if name == "" then name = "[No Name]" end
@@ -42,6 +67,7 @@ _G.buffer_tabline = function()
       local hi = buf == cur_buf and "%#TabLineSel#" or "%#TabLine#"
       tabline = tabline .. hi .. " " .. name .. mod .. " "
     end
+    ::continue::
   end
   return tabline
 end
