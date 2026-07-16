@@ -23,3 +23,6 @@ vim.keymap.set("n", "<leader>pg", telescopebuiltin.live_grep, { desc = "Live gre
 vim.keymap.set("n", "<leader>pb", telescopebuiltin.buffers, { desc = "List buffers" })
 vim.keymap.set("n", "<leader>ph", telescopebuiltin.help_tags, { desc = "Help tags" })
 vim.keymap.set("n", "<C-p>", telescopebuiltin.git_files, { desc = "Searches git files" })
+
+-- Show warnings inline --
+vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
