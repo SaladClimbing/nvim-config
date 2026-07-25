@@ -43,7 +43,6 @@ local skip_filetypes = {
   help = true,
   man = true,
   TelescopePrompt = true,
-  undotree = true,
   lspinfo = true,
   mason = true,
 }

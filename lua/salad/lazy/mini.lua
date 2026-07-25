@@ -4,14 +4,6 @@ return {
 	config = function()
 		-- Text Editing --
 		require("mini.comment").setup()
-		require("mini.completion").setup({
-			mappings = {
-				force_twostep = "<C-Space>",
-				force_fallback = "<A-Space>",
-				scroll_down = "<C-f>",
-				scroll_up = "<C-b>",
-			},
-		})
 		require("mini.pairs").setup()
 		require("mini.snippets").setup()
 		require("mini.surround").setup({
@@ -27,18 +19,15 @@ return {
 		})
 
 		-- General Workflow --
+		require("mini.diff").setup()
 
 		-- Appearance --
+		require("mini.hipatterns").setup({
+			highlighters = {
+				hex_color = require("mini.hipatterns").gen_highlighter.hex_color(),
+			},
+		})
 
 		-- Misc. --
-
-		-- Override <CR> to confirm completion --
-		vim.keymap.set("i", "<CR>", function()
-			if vim.fn.pumvisible() == 1 then
-				return "<C-y>"
-			else
-				return "<CR>"
-			end
-		end, { expr = true })
 	end,
 }
