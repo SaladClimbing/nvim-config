@@ -18,7 +18,7 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 What it does:
 - Installs system dependencies: git, node, go, rust, ripgrep, fd-find, build tools
 - Installs latest Neovim (tarball to /opt on Linux, brew on macOS)
-- Clones this config to `~/.config/nvim` (backsup existing)
+- Clones this config to `~/.config/nvim` (backs up existing)
 - Installs all plugins via lazy.nvim
 - Triggers Mason to auto-install LSP servers and formatters
 
@@ -33,6 +33,7 @@ source ~/.bashrc
 Options:
 | Flag | Description |
 |---|---|
+| `-v`, `--verbose` | Show all install output (no progress bar) |
 | `--install-font` | Install JetBrainsMono Nerd Font |
 | `--help` | Show usage |
 | `<repo-url>` | Use a different config repo |
@@ -59,7 +60,6 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
         ├── theme.lua         # catppuccin
         ├── treesitter.lua    # nvim-treesitter
         ├── mason.lua         # mason + lspconfig
-        ├── cmp.lua           # nvim-cmp + LuaSnip
         ├── telescope.lua     # telescope.nvim
         ├── conform.lua       # conform.nvim
         ├── undotree.lua      # undotree
@@ -69,7 +69,9 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
         ├── fidget.lua        # fidget.nvim
         ├── neotab.lua        # neotab.nvim
         ├── tpipeline.lua     # vim-tpipeline
-        └── vim-tmux-navigator.lua  # tmux pane navigation
+        ├── vim-tmux-navigator.lua  # tmux pane navigation
+        ├── colorizer.lua     # nvim-colorizer.lua
+        └── mini.lua          # mini.nvim (completion, pairs, snippets, surround, comment)
 ```
 
 ## Leader Key
@@ -95,6 +97,14 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 | showtabline | 2 |
 
 Transparent background via `after/plugin/colors.lua`.
+
+`hidden` and `switchbuf` are set in `remaps.lua`.
+
+Wrap is disabled via a `FileType` autocmd (in addition to `vim.opt.wrap = false`).
+
+### Hardmode
+
+Arrow keys are disabled in both insert and normal mode. Pressing an arrow key shows `KEY DISABLED`.
 
 ### Buffer Tabline
 
@@ -140,6 +150,7 @@ A custom VS Code-style tabline replaces the default tab line. Shows all listed b
 | n | `gD` | `vim.lsp.buf.declaration` | Goto Declaration |
 | n | `<leader>ca` | `vim.lsp.buf.code_action` | Code action |
 | n | `<leader>rn` | `vim.lsp.buf.rename` | Rename |
+| n | `<leader>d` | `vim.diagnostic.open_float` | Line diagnostics |
 | n | `<leader>e` | `vim.diagnostic.open_float` | Line diagnostics |
 | n | `[d` | `vim.diagnostic.goto_prev` | Prev diagnostic |
 | n | `]d` | `vim.diagnostic.goto_next` | Next diagnostic |
@@ -156,19 +167,19 @@ Mason tools auto-installed: `ruff`, `prettierd`, `stylua`, `clang-format`, `goim
 
 ---
 
-## nvim-cmp (Autocompletion)
+## mini.nvim (Completion & Editing)
 
-Sources: `nvim_lsp`, `luasnip`, `buffer`, `path`
+Modules: `mini.comment`, `mini.completion`, `mini.pairs`, `mini.snippets`, `mini.surround`
 
 | Mode | Key | Action |
 |---|---|---|
-| i | `<C-d>` | Scroll docs down |
-| i | `<C-f>` | Scroll docs up |
-| i | `<C-Space>` | Force complete |
-| i | `<C-e>` | Abort popup |
-| i | `<CR>` | Confirm (select first) |
-| i,s | `<Tab>` | Next item / expand snippet |
-| i,s | `<S-Tab>` | Prev item / jump back |
+| i | `<C-Space>` | Force complete (two-step) |
+| i | `<A-Space>` | Force complete (fallback) |
+| i | `<C-f>` | Scroll docs down |
+| i | `<C-b>` | Scroll docs up |
+| i | `<CR>` | Confirm completion (select first) |
+
+Surround keymaps: `sa` (add), `sd` (delete), `sf` (find), `sF` (find left), `sh` (highlight), `sr` (replace), `sn` (update n-lines).
 
 ---
 
@@ -244,9 +255,11 @@ Integrates Neovim's tabline and statusline with tmux, preventing duplicate statu
 
 ## Other Plugins
 
-- **lualine.nvim** - statusline (defaults, with web-devicons)
+- **lualine.nvim** - statusline (defaults, with web-dev-icons)
 - **lazydev.nvim** - Lua LSP enhancements (loads luvit types on `vim.uv`)
 - **catppuccin/nvim** - colorscheme (priority 1000)
+- **nvim-colorizer.lua** - inline color highlighting
+- **mini.nvim** - collection of 5 modules: mini.comment, mini.completion, mini.pairs, mini.snippets, mini.surround
 
 ---
 
@@ -266,6 +279,7 @@ Integrates Neovim's tabline and statusline with tmux, preventing duplicate statu
 | `<leader>ph` | Telescope | Help tags |
 | `<leader>ca` | LSP | Code action |
 | `<leader>rn` | LSP | Rename |
+| `<leader>d` | LSP | Line diagnostics |
 | `<leader>e` | LSP | Line diagnostics |
 | `<leader>u` | Undotree | Toggle undo tree |
 | `<leader>?` | which-key | Buffer-local keymaps |
