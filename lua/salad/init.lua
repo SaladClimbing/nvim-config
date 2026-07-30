@@ -3,7 +3,6 @@
 
 vim.g.mapleader = " "
 
-require("salad.lazy_init")  -- Plugin manager bootstrap + spec loader
-require("salad.remaps")     -- Global keybindings
-require("salad.settings")   -- Editor options, autocmds, buffer tabline
-
+require("salad.lazy_init") -- Plugin manager bootstrap + spec loader
+require("salad.remaps") -- Global keybindings
+require("salad.settings") -- Editor options, autocmds, buffer tabline

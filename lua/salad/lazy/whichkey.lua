@@ -46,7 +46,7 @@ return {
     wk.setup(opts)
     wk.add({
       { "<leader>p", group = "Telescope" },
-      { "<leader>u", group = "Undotree" },
+      { "<leader>u", group = "Diff" },
       { "<leader>b", group = "Buffer" },
     })
   end,
