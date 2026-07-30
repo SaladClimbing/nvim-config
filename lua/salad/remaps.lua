@@ -4,11 +4,15 @@ vim.o.hidden = true -- keep modified buffers in background
 vim.o.switchbuf = "usetab" -- reuse existing window on buffer switch
 
 -- Buffer navigation --
-vim.keymap.set("n", "<Tab>", ":bnext<CR>", { desc = "Next buffer" })
-vim.keymap.set("n", "<S-Tab>", ":bprev<CR>", { desc = "Previous buffer" })
+-- vim.keymap.set("n", "<Tab>", ":bnext<CR>", { desc = "Next buffer" })
+-- vim.keymap.set("n", "<S-Tab>", ":bprev<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bn", ":enew<CR>", { desc = "New buffer" })
-vim.keymap.set("n", "<leader>bd", ":bd<CR>", { desc = "Close buffer" })
-vim.keymap.set("n", "<leader>bD", ":bd!<CR>", { desc = "Force close buffer" })
+vim.keymap.set("n", "<leader>bd", function()
+	require("mini.bufremove").delete()
+end, { desc = "Close buffer" })
+vim.keymap.set("n", "<leader>bD", function()
+	require("mini.bufremove").delete(nil, true)
+end, { desc = "Force close buffer" })
 vim.keymap.set("n", "<S-h>", ":bprev<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<S-l>", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<leader>bb", "<cmd>Telescope buffers<CR>", { desc = "List buffers" })

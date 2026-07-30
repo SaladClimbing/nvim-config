@@ -5,7 +5,6 @@ return {
 		-- Text Editing --
 		require("mini.comment").setup()
 		require("mini.pairs").setup()
-		require("mini.snippets").setup()
 		require("mini.surround").setup({
 			mappings = {
 				add = "sa",
@@ -20,6 +19,9 @@ return {
 
 		-- General Workflow --
 		require("mini.diff").setup()
+		require("mini.bufremove").setup()
+		require("mini.tabline").setup()
+		require("mini.trailspace").setup()
 
 		-- Appearance --
 		require("mini.hipatterns").setup({

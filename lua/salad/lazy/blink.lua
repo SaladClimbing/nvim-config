@@ -24,7 +24,7 @@ return {
 		sources = {
 			default = { "lsp", "path", "snippets", "buffer" },
 		},
-		snippets = { preset = "mini_snippets" },
+
 		fuzzy = { implementation = "prefer_rust_with_warning" },
 	},
 }
