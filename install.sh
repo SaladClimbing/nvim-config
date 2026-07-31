@@ -116,7 +116,7 @@ detect_pkg_manager() {
     Darwin)
       if ! command -v brew &>/dev/null; then
         echo "Installing Homebrew..."
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       fi
       PKG_MANAGER=brew
       PKG_INSTALL="brew install"
@@ -273,48 +273,6 @@ install_plugins() {
 }
 
 # ──────────────────────────────────────────────
-# Trigger Mason LSP / tool installs
-# ──────────────────────────────────────────────
-install_mason_packages() {
-  nvim --headless \
-    "+lua vim.defer_fn(function() vim.cmd('qa!') end, 180000)" \
-    2>/dev/null &
-  local nvim_pid=$!
-
-  local mason_dir="$HOME/.local/share/nvim/mason/packages"
-  local seen_file
-  seen_file=$(mktemp)
-
-  local tty="/dev/stdout"
-  $VERBOSE || tty="/dev/tty"
-
-  local elapsed=0
-  while kill -0 "$nvim_pid" 2>/dev/null && [ "$elapsed" -lt 210 ]; do
-    sleep 2
-    elapsed=$((elapsed + 2))
-
-    if [ -d "$mason_dir" ]; then
-      for pkg in "$mason_dir"/*/; do
-        pkg=$(basename "$pkg")
-        [ -z "$pkg" ] && continue
-        grep -qxF "$pkg" "$seen_file" 2>/dev/null && continue
-        echo "$pkg" >> "$seen_file"
-        printf "    └─ %s\n" "$pkg" > "$tty"
-      done
-    fi
-
-    printf "\r    Installing Mason packages... %ds" "$elapsed" > "$tty"
-  done
-  printf "\n" > "$tty"
-  rm -f "$seen_file"
-
-  wait "$nvim_pid" 2>/dev/null || true
-
-  echo "    Mason installs initiated. Open nvim to finish any remaining."
-  echo "    Check progress with:  :Mason"
-}
-
-# ──────────────────────────────────────────────
 # Persist PATH and source shell config
 # ──────────────────────────────────────────────
 persist_path() {
@@ -352,9 +310,8 @@ print_summary() {
   printf "Total time: %s\n" "$(elapsed)"
   echo ""
   echo "Next steps:"
-  echo "  1. Open nvim — Mason auto-installs LSP servers & formatters:"
+  echo "  1. Open nvim — LSP servers & formatters auto-install via Mason:"
   echo "       nvim"
-  echo "     Check progress:  :Mason"
   echo ""
   echo "  2. (optional) Install extra Treesitter parsers:"
   echo "       :TSInstall all"
@@ -383,7 +340,6 @@ run_stage "Cloning nvim config" clone_config
 export PATH="$NVIM_BIN_DIR:$PATH"
 
 run_stage "Installing Neovim plugins" install_plugins
-run_stage "Installing Mason LSP packages" install_mason_packages
 
 run_stage "Adding nvim to PATH" persist_path
 
