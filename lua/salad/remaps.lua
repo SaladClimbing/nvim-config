@@ -4,6 +4,8 @@ vim.o.hidden = true -- keep modified buffers in background
 vim.o.switchbuf = "usetab" -- reuse existing window on buffer switch
 
 -- Buffer navigation --
+-- Tab/S-Tab buffer switching is intentionally disabled in normal mode:
+-- Tab is used by blink.cmp (insert mode) and neotab for smart indentation.
 -- vim.keymap.set("n", "<Tab>", ":bnext<CR>", { desc = "Next buffer" })
 -- vim.keymap.set("n", "<S-Tab>", ":bprev<CR>", { desc = "Previous buffer" })
 vim.keymap.set("n", "<leader>bn", ":enew<CR>", { desc = "New buffer" })
@@ -29,6 +31,7 @@ vim.keymap.set("n", "<leader>ph", telescopebuiltin.help_tags, { desc = "Help tag
 vim.keymap.set("n", "<C-p>", telescopebuiltin.git_files, { desc = "Searches git files" })
 
 -- Show warnings inline --
+-- Global fallback for line diagnostics (see also `<leader>e` set in mason.lua).
 vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show line diagnostics" })
 
 -- Unmap Arrows --

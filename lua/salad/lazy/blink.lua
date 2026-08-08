@@ -11,6 +11,8 @@ return {
 	---@type blink.cmp.Config
 	opts = {
 		keymap = {
+			-- Start from the "super-tab" preset, then override:
+			-- Tab/Shift-Tab fall back to native behavior when the menu is closed.
 			preset = "super-tab",
 			["<Tab>"] = { "select_next", "fallback" },
 			["<S-Tab>"] = { "select_prev", "fallback" },
@@ -22,6 +24,7 @@ return {
 		},
 		appearance = { nerd_font_variant = "mono" },
 		sources = {
+			-- Order determines priority: LSP first, then path/snippets/buffer.
 			default = { "lsp", "path", "snippets", "buffer" },
 		},
 
