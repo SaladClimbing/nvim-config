@@ -44,13 +44,14 @@ return {
   config = function(_, opts)
     local wk = require("which-key")
     wk.setup(opts)
+    -- Group labels shown when a `<leader>` prefix is pressed.
     wk.add({
       { "<leader>p", group = "Telescope" },
-      { "<leader>u", group = "Diff" },
       { "<leader>b", group = "Buffer" },
     })
   end,
   keys = {
+    -- Show only buffer-local keymaps (e.g. LSP mappings for the current buffer).
     {
       "<leader>?",
       function()

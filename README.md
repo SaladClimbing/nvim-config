@@ -1,5 +1,23 @@
 # Salad's Neovim Config
 
+A batteries-included Neovim configuration built on **lazy.nvim**. Focused on
+LSP-driven development, fuzzy finding, and a clean, distraction-free UI — all
+with minimal ceremony.
+
+Highlights:
+
+- **blink.cmp** completion (LSP, path, snippets, buffer sources)
+- **mini.nvim** suite for editing, git diff gutter, tabline, and colors
+- **Mason + lspconfig** LSP servers, auto-installed on first run
+- **conform.nvim** format-on-save across languages
+- **Telescope** fuzzy finder (files, grep, buffers, git)
+- **render-markdown** live Markdown preview
+- Seamless **tmux** pane navigation
+
+> Complete keymap reference: [`keybinds.md`](keybinds.md)
+
+---
+
 ## Install
 
 ### Prerequisites
@@ -16,21 +34,21 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 ```
 
 What it does:
-- Installs system dependencies: git, node, go, rust, ripgrep, fd-find, build tools
-- Installs latest Neovim (tarball to /opt on Linux, brew on macOS)
-- Clones this config to `~/.config/nvim` (backs up existing)
+
+- Installs system dependencies: git, node, go, rust, ripgrep, fd, build tools
+- Installs the latest Neovim (tarball to `/opt` on Linux, brew on macOS)
+- Clones this config to `~/.config/nvim` (backs up an existing one)
 - Installs all plugins via lazy.nvim
-- Triggers Mason to auto-install LSP servers and formatters
+- Triggers Mason to auto-install LSP servers and formatters on first `nvim`
 
 After the script finishes, reload your shell config to use `nvim` right away:
 
 ```bash
-source ~/.bashrc
+source ~/.zshrc   # or ~/.bashrc / ~/.profile
 ```
 
-(Replace `~/.bashrc` with `~/.zshrc` or `~/.profile` depending on your shell.)
+### Options
 
-Options:
 | Flag | Description |
 |---|---|
 | `-v`, `--verbose` | Show all install output (no progress bar) |
@@ -43,36 +61,41 @@ Options:
 curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/install.sh | bash -s --install-font git@github.com:user/other-config.git
 ```
 
+---
+
 ## Architecture
 
 ```
 ~/.config/nvim/
 ├── init.lua                  # entry point -> require("salad")
+├── keybinds.md               # full keymap reference
 ├── lazy-lock.json            # locked plugin versions
 ├── after/plugin/colors.lua   # transparent bg override
 ├── install.sh                # one-shot setup script
 └── lua/salad/
     ├── init.lua              # mapleader, loads submodules
-    ├── settings.lua          # editor options, autocmds, buffer tabline
+    ├── settings.lua          # editor options, autocmds, colorscheme
     ├── remaps.lua            # global keymaps
     ├── lazy_init.lua         # lazy.nvim bootstrap
     └── lazy/                 # per-plugin specs
         ├── theme.lua         # catppuccin
-        ├── treesitter.lua    # nvim-treesitter
-        ├── mason.lua         # mason + lspconfig
+        ├── treesitter.lua    # nvim-treesitter (highlight, folding)
+        ├── mason.lua         # mason + lspconfig (LSP keymaps here)
         ├── telescope.lua     # telescope.nvim
-        ├── conform.lua       # conform.nvim
-        ├── undotree.lua      # undotree
+        ├── blink.lua         # blink.cmp completion
+        ├── conform.lua       # conform.nvim (format on save)
         ├── lualine.lua       # lualine.nvim
         ├── lazydev.lua       # lazydev.nvim
         ├── whichkey.lua      # which-key.nvim
         ├── fidget.lua        # fidget.nvim
         ├── neotab.lua        # neotab.nvim
         ├── tpipeline.lua     # vim-tpipeline
+        ├── markdown.lua      # render-markdown.nvim
         ├── vim-tmux-navigator.lua  # tmux pane navigation
-        ├── colorizer.lua     # nvim-colorizer.lua
-        └── mini.lua          # mini.nvim (completion, pairs, snippets, surround, comment)
+        └── mini.lua          # mini.nvim modules
 ```
+
+---
 
 ## Leader Key
 
@@ -85,115 +108,64 @@ curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/inst
 | Option | Value |
 |---|---|
 | colorscheme | catppuccin |
-| nu / relativenumber | on |
-| tabstop / shiftwidth | 4 |
+| line numbers | relative (`nu` + `relativenumber`) |
+| tab width / shift | 4 |
 | expandtab / smartindent | on |
 | wrap | off |
 | textwidth | 0 |
 | incsearch | on |
 | termguicolors | on |
-| hidden | on |
-| switchbuf | usetab |
-| showtabline | 2 |
+| folding | treesitter (`expr`, `foldlevel = 99`) |
+| hidden / switchbuf | on / `usetab` |
 
-Transparent background via `after/plugin/colors.lua`.
+Set in `lua/salad/settings.lua` and `lua/salad/remaps.lua`.
 
-`hidden` and `switchbuf` are set in `remaps.lua`.
-
-Wrap is disabled via a `FileType` autocmd (in addition to `vim.opt.wrap = false`).
-
-### Hardmode
-
-Arrow keys are disabled in both insert and normal mode. Pressing an arrow key shows `KEY DISABLED`.
-
-### Buffer Tabline
-
-A custom VS Code-style tabline replaces the default tab line. Shows all listed buffers with modified indicators. Filetypes like `netrw`, `qf`, `help`, `TelescopePrompt`, `undotree`, `lspinfo`, and `mason` are hidden from the tabline. Refreshes on `BufEnter`, `BufAdd`, `BufDelete`, and `BufWritePost`.
+- Transparent background via `after/plugin/colors.lua`.
+- Netrw buffers are hidden from the buffer list and wiped on hide.
+- Wrap is disabled both globally and per-filetype.
 
 ---
 
-## Global Keymaps
+## Hardmode
 
-| Mode | Key | Action | Description |
-|---|---|---|---|
-| n | `<leader>pv` | `:Ex` | File explorer |
-| n | `<Tab>` | `:bnext` | Next buffer |
-| n | `<S-Tab>` | `:bprev` | Previous buffer |
-| n | `<leader>bn` | `:enew` | New buffer |
-| n | `<leader>bd` | `:bd` | Close buffer |
-| n | `<leader>bD` | `:bd!` | Force close buffer |
-| n | `<S-h>` | `:bprev` | Previous buffer |
-| n | `<S-l>` | `:bnext` | Next buffer |
-| n | `<leader>bb` | Telescope | List buffers |
-| n | `<leader>pf` | Telescope | Find files |
-| n | `<leader>pg` | Telescope | Live grep |
-| n | `<leader>pb` | Telescope | Buffers |
-| n | `<leader>ph` | Telescope | Help tags |
-| n | `<C-p>` | Telescope | Git files |
-| n | `<c-h>` | tmux-navigator | Tmux pane left |
-| n | `<c-j>` | tmux-navigator | Tmux pane down |
-| n | `<c-k>` | tmux-navigator | Tmux pane up |
-| n | `<c-l>` | tmux-navigator | Tmux pane right |
-| n | `<c-\>` | tmux-navigator | Tmux previous pane |
+Arrow keys are disabled in normal and insert mode (`lua/salad/remaps.lua`).
+Pressing an arrow key shows `KEY DISABLED` — use `h/j/k/l` instead.
 
 ---
 
-## LSP Keymaps (set per-buffer on LspAttach)
+## Plugins
 
-| Mode | Key | Action | Description |
-|---|---|---|---|
-| n | `gd` | Telescope | Goto Definition |
-| n | `gr` | Telescope | References |
-| n | `gI` | Telescope | Goto Implementation |
-| n | `gy` | Telescope | Goto Type Definition |
-| n | `K` | `vim.lsp.buf.hover` | Hover docs |
-| n | `gD` | `vim.lsp.buf.declaration` | Goto Declaration |
-| n | `<leader>ca` | `vim.lsp.buf.code_action` | Code action |
-| n | `<leader>rn` | `vim.lsp.buf.rename` | Rename |
-| n | `<leader>d` | `vim.diagnostic.open_float` | Line diagnostics |
-| n | `<leader>e` | `vim.diagnostic.open_float` | Line diagnostics |
-| n | `[d` | `vim.diagnostic.goto_prev` | Prev diagnostic |
-| n | `]d` | `vim.diagnostic.goto_next` | Next diagnostic |
+### Completion — blink.cmp
 
-Inlay hints enabled on LspAttach when server supports it.
+Fast, native-feeling autocompletion with sources: `lsp`, `path`, `snippets`,
+`buffer`. Ghost text preview, auto-showing documentation, and a configurable
+fuzzy matcher.
 
----
+- **Keymaps**: `<Tab>` select-next, `<S-Tab>` select-prev, `<CR>` accept
+  (see [keybinds.md](keybinds.md#completion--blinkcmp))
 
-## LSP Servers Installed
+### Fuzzy Finder — telescope.nvim
 
-`basedpyright`, `vtsls`, `html`, `cssls`, `tailwindcss`, `gopls`, `rust_analyzer`, `clangd`, `jsonls`
+Fuzzy searching over files, grep results, buffers, help tags, and git files,
+with fzf-native for speed.
 
-Mason tools auto-installed: `ruff`, `prettierd`, `stylua`, `clang-format`, `goimports`, `golangci-lint`, `markdownlint`, `jq`, `eslint_d`
+- **Keymaps**: `<leader>pf` find files, `<leader>pg` live grep, `<leader>pb` /
+  `<leader>bb` list buffers, `<leader>ph` help tags, `<C-p>` git files
 
----
+### LSP — mason.nvim + nvim-lspconfig
 
-## mini.nvim (Completion & Editing)
+LSP servers are auto-installed via Mason and wired up by lspconfig. Buffer-local
+keymaps are applied on `LspAttach`, and inlay hints are enabled where supported.
 
-Modules: `mini.comment`, `mini.completion`, `mini.pairs`, `mini.snippets`, `mini.surround`
+- **Keymaps**: `gd` definition, `gr` references, `gI` implementation, `gy` type
+  definition, `K` hover, `gD` declaration, `<leader>ca` code action,
+  `<leader>rn` rename, `<leader>e` / `<leader>d` diagnostics, `[d` / `]d`
+  previous/next diagnostic
+- **Mason tools**: formatters/linters auto-installed on first run (see below)
 
-| Mode | Key | Action |
-|---|---|---|
-| i | `<C-Space>` | Force complete (two-step) |
-| i | `<A-Space>` | Force complete (fallback) |
-| i | `<C-f>` | Scroll docs down |
-| i | `<C-b>` | Scroll docs up |
-| i | `<CR>` | Confirm completion (select first) |
+### Formatting — conform.nvim
 
-Surround keymaps: `sa` (add), `sd` (delete), `sf` (find), `sF` (find left), `sh` (highlight), `sr` (replace), `sn` (update n-lines).
-
----
-
-## nvim-treesitter
-
-Parsers: `lua`, `vim`, `vimdoc`, `query`, `markdown`, `python`, `javascript`, `typescript`, `c`, `cpp`, `rust`, `go`
-
-Auto-install: on | Highlight: on
-
----
-
-## Conform (Format on Save)
-
-500ms timeout, LSP fallback enabled.
+Format on save (500ms timeout, LSP fallback). Per-filetype formatters:
 
 | Filetype | Formatter(s) |
 |---|---|
@@ -205,82 +177,80 @@ Auto-install: on | Highlight: on
 | c/cpp | clang-format |
 | rust | rustfmt |
 
+### Editing & Workflow — mini.nvim
+
+Five self-contained modules replace the older custom implementations:
+
+- **mini.comment** — `gcc` comment line, `gc{motion}` comment motion, `gc` in visual
+- **mini.pairs** — auto-pairing brackets/quotes; `<BS>` deletes an empty pair
+- **mini.surround** — `sa` add, `sd` delete, `sf`/`sF` find, `sh` highlight,
+  `sr` replace, `sn` update n-lines
+- **mini.diff** — git diff gutter in the sign column; `]h`/`[h` navigate hunks,
+  `gh` stage, `gH` reset
+- **mini.trailspace** — trailing-whitespace highlighting; `:MiniTrailspaceClean`
+  removes it
+
+Also provides the buffer **tabline** (mini.tabline, replacing the default tab
+line), buffer removal used by the buffer keymaps (mini.bufremove), and inline
+**hex-color highlighting** (mini.hipatterns, replacing nvim-colorizer).
+
+### Smart Tab — neotab.nvim
+
+In insert mode, `<Tab>` jumps between paired brackets/quotes
+(`() [] {} '' "" \`\` <>`) and across indentation levels; `<S-Tab>` reverses.
+
+### Markdown — render-markdown.nvim
+
+Live in-buffer rendering of Markdown: headings, checkboxes, code blocks,
+tables, and images. Renders as you type — no keymaps needed.
+
+### Syntax & Folding — nvim-treesitter
+
+Highlighting and expression folding for all installed parsers; new language
+parsers auto-install on first open.
+
+### Statusline — lualine.nvim
+
+Clean statusline with web-dev-icons. The LSP progress spinner from
+**fidget.nvim** integrates with it.
+
+### Lua Dev — lazydev.nvim
+
+Better Lua LSP experience in this config's own files; loads luvit types when
+`vim.uv` is referenced.
+
+### Tmux — vim-tmux-navigator + vim-tpipeline
+
+Seamless cursor movement between Neovim windows and tmux panes.
+
+- **Keymaps**: `<C-h>` / `<C-j>` / `<C-k>` / `<C-l>` move between panes,
+  `<C-\>` previous pane
+- vim-tpipeline keeps the tmux statusline clean and uncluttered.
+
+### Keymap Cheatsheet — which-key.nvim
+
+Press `<leader>` (or wait) for a popup listing the available keymaps.
+
+- **Keymaps**: `<leader>?` shows buffer-local keymaps only
+- Groups: `<leader>p` Telescope, `<leader>b` Buffer
+
+### Theme — catppuccin
+
+Catppuccin colorscheme with a transparent background override.
+
 ---
 
-## Undotree
+## LSP Servers Installed
 
-| Key | Action |
-|---|---|
-| `<leader>u` | Toggle undotree |
+`basedpyright`, `vtsls`, `html`, `cssls`, `tailwindcss`, `gopls`,
+`rust_analyzer`, `clangd`, `jsonls`
 
----
-
-## which-key.nvim
-
-Keymap popup cheatsheet. Shows available keymaps when `<leader>` is pressed. Groups configured:
-
-| Prefix | Group |
-|---|---|
-| `<leader>p` | Telescope |
-| `<leader>b` | Buffer |
-| `<leader>u` | Undotree |
-
-Press `<leader>?` to show available buffer-local keymaps.
+Mason tools auto-installed: `ruff`, `prettierd`, `stylua`, `clang-format`,
+`goimports`, `golangci-lint`, `markdownlint`, `jq`, `eslint_d`
 
 ---
 
-## vim-tmux-navigator
+## Keybinds
 
-Seamless pane navigation between Neovim windows and tmux panes using Ctrl+h/j/k/l. Requires `vim-tpipeline` for clean tmux statusline integration.
-
----
-
-## neotab.nvim
-
-Smart Tab behavior in insert mode. Tab navigates between paired brackets/quotes (`()`, `[]`, `{}`, `''`, `""`, ` `` `, `<>`) and indentation levels.
-
----
-
-## fidget.nvim
-
-LSP progress spinner displayed in the statusline while LSP servers are loading or processing.
-
----
-
-## vim-tpipeline
-
-Integrates Neovim's tabline and statusline with tmux, preventing duplicate status bars when using `vim-tmux-navigator`.
-
----
-
-## Other Plugins
-
-- **lualine.nvim** - statusline (defaults, with web-dev-icons)
-- **lazydev.nvim** - Lua LSP enhancements (loads luvit types on `vim.uv`)
-- **catppuccin/nvim** - colorscheme (priority 1000)
-- **nvim-colorizer.lua** - inline color highlighting
-- **mini.nvim** - collection of 5 modules: mini.comment, mini.completion, mini.pairs, mini.snippets, mini.surround
-
----
-
-## All `<leader>` Keybinds Summary
-
-| Key | Plugin | Action |
-|---|---|---|
-| `<leader>pv` | Netrw | File explorer |
-| `<leader>bn` | Buffer | New buffer |
-| `<leader>bd` | Buffer | Close buffer |
-| `<leader>bD` | Buffer | Force close buffer |
-
-| `<leader>bb` | Telescope | List buffers |
-| `<leader>pf` | Telescope | Find files |
-| `<leader>pg` | Telescope | Live grep |
-| `<leader>pb` | Telescope | Buffers |
-| `<leader>ph` | Telescope | Help tags |
-| `<leader>ca` | LSP | Code action |
-| `<leader>rn` | LSP | Rename |
-| `<leader>d` | LSP | Line diagnostics |
-| `<leader>e` | LSP | Line diagnostics |
-| `<leader>u` | Undotree | Toggle undo tree |
-| `<leader>?` | which-key | Buffer-local keymaps |
-| `<C-p>` | Telescope | Git files |
+See [`keybinds.md`](keybinds.md) for the complete, up-to-date keymap reference,
+including plugin default keymaps.

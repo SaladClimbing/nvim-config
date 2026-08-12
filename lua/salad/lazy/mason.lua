@@ -13,6 +13,7 @@ return {
 		local lspconfig = require("lspconfig")
 		local mason_lspconfig = require("mason-lspconfig")
 
+		-- Buffer-local LSP keymaps, set for every attached server.
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup("lsp-attach", { clear = true }),
 			callback = function(event)
@@ -40,6 +41,7 @@ return {
 		})
 
 		mason_lspconfig.setup({
+			-- LSP servers installed on first run.
 			ensure_installed = {
 				"basedpyright",
 				"vtsls",
@@ -63,6 +65,7 @@ return {
 
 		vim.api.nvim_create_autocmd("VimEnter", {
 			group = vim.api.nvim_create_augroup("mason-install", { clear = true }),
+			-- Formatters/linters auto-installed once on startup (not LSP servers).
 			callback = function()
 				local mason_registry = require("mason-registry")
 				for _, pkg_name in ipairs({
