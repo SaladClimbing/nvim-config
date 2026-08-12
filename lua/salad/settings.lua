@@ -28,24 +28,33 @@ vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
 vim.opt.foldlevel = 99            -- start with all folds open
 
+vim.opt.clipboard = "unnamedplus"
+
 -- Hide netrw buffers from buffer list and auto-wipe on hide
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "netrw",
-  callback = function()
-    vim.opt_local.buflisted = false
-    vim.opt_local.bufhidden = "wipe"
-  end,
-  desc = "Netrw buffer cleanup",
+	pattern = "netrw",
+	callback = function()
+		vim.opt_local.buflisted = false
+		vim.opt_local.bufhidden = "wipe"
+	end,
+	desc = "Netrw buffer cleanup",
 })
 
 -- Enforce no-wrapping for every filetype (belt & suspenders to wrap = false)
 vim.api.nvim_create_autocmd("FileType", {
-  pattern = "*",
-  callback = function()
-    vim.wo.wrap = false
-  end,
-  desc = "Disable visual line wrapping for all filetypes",
+	pattern = "*",
+	callback = function()
+		vim.wo.wrap = false
+	end,
+	desc = "Disable visual line wrapping for all filetypes",
 })
 
-
-
+local skip_filetypes = {
+	netrw = true,
+	qf = true,
+	help = true,
+	man = true,
+	TelescopePrompt = true,
+	lspinfo = true,
+	mason = true,
+}
