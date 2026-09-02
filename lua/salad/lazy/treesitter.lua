@@ -12,6 +12,8 @@ return {
           "lua", "vim", "vimdoc", "query", "markdown",
           "python", "javascript", "typescript",
           "c", "cpp", "rust", "go",
+          "r", "rnoweb", "yaml", "csv",
+          "markdown_inline", "latex",
         },
         auto_install = true,
         highlight = { enable = true },
