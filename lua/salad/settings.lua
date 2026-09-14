@@ -58,3 +58,12 @@ local skip_filetypes = {
 	lspinfo = true,
 	mason = true,
 }
+
+-- Associate .mdx files with markdown filetype
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	pattern = "*.mdx",
+	callback = function()
+		vim.opt_local.filetype = "markdown"
+	end,
+	desc = "Treat .mdx files as markdown",
+})
