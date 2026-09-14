@@ -4,6 +4,7 @@ return {
 	"R-nvim/R.nvim",
 	lazy = false,
 	config = function()
+		vim.g.R_filetypes = { "r", "rnoweb", "rmd", "rhelp" }
 		---@type RConfigUserOpts
 		local opts = {
 			R_app = "radian",
@@ -12,6 +13,7 @@ return {
 			rconsole_width = 78,
 			auto_start = "on startup",
 			objbr_auto_start = true,
+			bracketed_paste = true,
 			hook = {
 				on_filetype = function()
 					vim.api.nvim_buf_set_keymap(0, "n", "<Enter>", "<Plug>RDSendLine", {})
