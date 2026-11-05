@@ -9,12 +9,16 @@ return {
     config = function()
       require("nvim-treesitter").setup({})
 
-      require("nvim-treesitter").install({
-        "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline",
-        "python", "javascript", "typescript",
-        "c", "cpp", "rust", "go",
-        "r", "rnoweb", "yaml", "csv", "latex",
-      })
+      -- Minimal profile has no compiler; rely on the parsers bundled with
+      -- Neovim and skip installing/compiling more.
+      if not vim.g.salad_minimal then
+        require("nvim-treesitter").install({
+          "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline",
+          "python", "javascript", "typescript",
+          "c", "cpp", "rust", "go",
+          "r", "rnoweb", "yaml", "csv", "latex",
+        })
+      end
 
       vim.treesitter.language.register("markdown", "quarto")
 

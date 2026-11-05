@@ -12,7 +12,9 @@ SECONDS=0
 
 REPO_URL="${REPO_URL:-https://github.com/SaladClimbing/nvim-config.git}"
 INSTALL_FONT=false
+MINIMAL=false
 CONFIG_DIR="$HOME/.config/nvim"
+MINIMAL_MARKER="$CONFIG_DIR/.minimal"
 NVIM_BIN_DIR="$HOME/.local/bin"
 VERBOSE=false
 
@@ -21,6 +23,14 @@ usage() {
 Usage: $0 [options] [repo-url]
 
 Install neovim config and dependencies.
+
+Profiles:
+  (default)         Full setup: LSP, completion, formatters, treesitter parsers,
+                    plus node/go/rust/build tools
+  -m, --minimal     Lightweight setup for servers/VPS: core editing plugins only.
+                    Skips node/go/rust, build tools, Mason/LSP, completion,
+                    formatters, and treesitter parser compilation. Uses the
+                    parsers bundled with Neovim.
 
 Options:
   -v, --verbose     Show all install output (no progress bar)
@@ -36,6 +46,7 @@ EOF
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -v|--verbose) VERBOSE=true; shift ;;
+    -m|--minimal) MINIMAL=true; shift ;;
     --install-font) INSTALL_FONT=true; shift ;;
     --help) usage ;;
     -*)
@@ -188,6 +199,15 @@ install_search_build() {
   esac
 }
 
+# Minimal profile only needs the Telescope search tools. No compilers: the
+# bundled Neovim parsers are used instead of compiled treesitter parsers.
+install_minimal_search() {
+  case "$PKG_MANAGER" in
+    apt|dnf|pacman|zypper) $PKG_INSTALL ripgrep fd-find || $PKG_INSTALL ripgrep fd ;;
+    brew) $PKG_INSTALL ripgrep fd ;;
+  esac
+}
+
 install_rust() {
   if command -v rustup &>/dev/null; then
     return 0
@@ -218,13 +238,23 @@ install_neovim() {
       $PKG_INSTALL neovim
       ;;
     Linux)
-      local tarball="/tmp/nvim-linux-x86_64.tar.gz"
+      local arch
+      case "$(uname -m)" in
+        x86_64|amd64) arch="x86_64" ;;
+        aarch64|arm64) arch="arm64" ;;
+        *)
+          echo "Unsupported Linux architecture: $(uname -m)" >&2
+          return 1
+          ;;
+      esac
 
-      curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz" -o "$tarball"
-      sudo rm -rf /opt/nvim-linux-x86_64
+      local tarball="/tmp/nvim-linux-$arch.tar.gz"
+
+      curl -fsSL "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$arch.tar.gz" -o "$tarball"
+      sudo rm -rf "/opt/nvim-linux-$arch"
       sudo tar -C /opt -xzf "$tarball"
 
-      NVIM_BIN_DIR="/opt/nvim-linux-x86_64/bin"
+      NVIM_BIN_DIR="/opt/nvim-linux-$arch/bin"
       ;;
   esac
 }
@@ -261,6 +291,16 @@ clone_config() {
   git clone --depth=1 "$REPO_URL" "$CONFIG_DIR"
 }
 
+# Record the profile inside the config dir. The config reads this marker on
+# startup (see lua/salad/init.lua) and only loads the matching plugin set.
+write_profile_marker() {
+  if $MINIMAL; then
+    touch "$MINIMAL_MARKER"
+  else
+    rm -f "$MINIMAL_MARKER"
+  fi
+}
+
 # ──────────────────────────────────────────────
 # Install plugins (lazy.nvim bootstrap)
 # ──────────────────────────────────────────────
@@ -268,8 +308,13 @@ install_plugins() {
   # Ensure PATH includes nvim
   export PATH="$NVIM_BIN_DIR:$PATH"
 
-  # lazy.nvim handles its own bootstrap; sync installs all locked plugins
-  nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 || true
+  # lazy.nvim handles its own bootstrap; sync installs all locked plugins.
+  # SALAD_MINIMAL makes lazy only fetch the lightweight plugin set.
+  if $MINIMAL; then
+    SALAD_MINIMAL=1 nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 || true
+  else
+    nvim --headless "+Lazy! sync" +qa 2>&1 | tail -5 || true
+  fi
 }
 
 # ──────────────────────────────────────────────
@@ -309,12 +354,23 @@ print_summary() {
   echo ""
   printf "Total time: %s\n" "$(elapsed)"
   echo ""
-  echo "Next steps:"
-  echo "  1. Open nvim — LSP servers & formatters auto-install via Mason:"
-  echo "       nvim"
-  echo ""
-  echo "  2. (optional) Install extra Treesitter parsers:"
-  echo "       :TSInstall all"
+  if $MINIMAL; then
+    echo "Profile: minimal (no LSP/Mason, no compiled treesitter parsers)"
+    echo "Next steps:"
+    echo "  1. Open nvim:"
+    echo "       nvim"
+    echo ""
+    echo "  2. To switch to the full profile later:"
+    echo "       rm \"$MINIMAL_MARKER\" && nvim --headless \"+Lazy! sync\" +qa"
+  else
+    echo "Next steps:"
+    echo "  1. Open nvim — LSP servers & formatters auto-install via Mason:"
+    echo "       nvim"
+    echo ""
+    echo "  2. (optional) Install extra Treesitter parsers:"
+    echo "       :TSInstall all"
+  fi
+
   echo ""
   echo "Config: $CONFIG_DIR"
 }
@@ -325,9 +381,15 @@ print_summary() {
 run_stage "Detecting OS and package manager" detect_pkg_manager
 run_stage "Updating package index" update_pkg_index
 run_stage "Installing core tools" install_core_tools
-run_stage "Installing languages" install_langs
-run_stage "Installing search and build tools" install_search_build
-run_stage "Installing Rust" install_rust
+
+if $MINIMAL; then
+  run_stage "Installing search tools" install_minimal_search
+else
+  run_stage "Installing languages" install_langs
+  run_stage "Installing search and build tools" install_search_build
+  run_stage "Installing Rust" install_rust
+fi
+
 run_stage "Installing Neovim" install_neovim
 
 if $INSTALL_FONT; then
@@ -335,6 +397,7 @@ if $INSTALL_FONT; then
 fi
 
 run_stage "Cloning nvim config" clone_config
+run_stage "Writing profile" write_profile_marker
 
 # Ensure PATH includes nvim for subsequent steps
 export PATH="$NVIM_BIN_DIR:$PATH"

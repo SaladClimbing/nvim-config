@@ -51,6 +51,7 @@ source ~/.zshrc   # or ~/.bashrc / ~/.profile
 
 | Flag | Description |
 |---|---|
+| `-m`, `--minimal` | Lightweight profile for servers/VPS (see below) |
 | `-v`, `--verbose` | Show all install output (no progress bar) |
 | `--install-font` | Install JetBrainsMono Nerd Font |
 | `--help` | Show usage |
@@ -59,7 +60,31 @@ source ~/.zshrc   # or ~/.bashrc / ~/.profile
 ```bash
 # Custom config + font
 curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/install.sh | bash -s --install-font git@github.com:user/other-config.git
+
+# Minimal setup on a VPS
+curl -fsSL https://raw.githubusercontent.com/SaladClimbing/nvim-config/main/install.sh | bash -s -- --minimal
 ```
+
+### Minimal profile (VPS / servers)
+
+`--minimal` installs Neovim plus only what the core editor needs: `git`,
+`curl`, `ripgrep`, and `fd`. It skips node/go/rust, build tools, and the font.
+
+The config loads a reduced plugin set in this mode: theme, treesitter
+(using the parsers bundled with Neovim, no compilation), Telescope (Lua
+sorter instead of fzf-native), mini.nvim, lualine, which-key, tmux
+integration, and render-markdown. Mason, LSP, completion, formatters, and
+R.nvim are not loaded, so nothing gets downloaded or compiled on first launch.
+
+The profile is persisted as `~/.config/nvim/.minimal`, which the config reads
+at startup. To go back to the full profile later:
+
+```bash
+rm ~/.config/nvim/.minimal
+nvim --headless "+Lazy! sync" +qa
+```
+
+Or override per launch: `SALAD_MINIMAL=0 nvim`.
 
 ---
 
