@@ -25,7 +25,7 @@ vim.opt.termguicolors = true      -- 24-bit color support
 
 -- Folding via treesitter (see also nvim-treesitter config) --
 vim.opt.foldmethod = "expr"
-vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 vim.opt.foldlevel = 99            -- start with all folds open
 
 vim.opt.clipboard = "unnamedplus"
